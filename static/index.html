@@ -1,0 +1,122 @@
+<!Doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <style>
+        #msg {
+            list-style: none;
+            margin: 10px;
+            padding: 0;
+        }
+
+        #msg li {
+            border: 1px solid black;
+            margin-bottom: 10px;
+        }
+
+        #msg li .header {
+            border-bottom: 1px solid #d9d9d9;
+        }
+
+        #msg li .footer {
+            border-top: 1px solid #d9d9d9;
+        }
+
+        #msg .level {
+            font-style: italic;
+        }
+
+        .small-font {
+            font-size: 14px;
+            color: gray;
+        }
+
+        #msg li .body {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        #words {
+            margin: 10px;
+            margin-top: 20px;
+        }
+
+        #words textarea {
+            width: 90%;
+        }
+
+        #words>* {
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="msg">
+    </ul>
+
+    <hr>
+
+    <div id="words">
+        <textarea rows="3" placeholder="留言吧少年" name="body"></textarea>
+        <input type="text" placeholder="你的名字呢" name="author" />
+        <button type="button" onclick="submitWords()">提交</button>
+    </div>
+
+    <script>
+        function addItem(obj) {
+            let content = String.raw`
+            
+            <div class="header small-font">
+                <span class="level">${obj.level}楼 </span>
+                <span class="author">${obj.author}</span>
+            </div>
+            <div class="body">${obj.body}</div>
+            <div class="footer small-font">${obj.date}</div>
+        
+            `
+            var node = document.createElement("li");
+            node.innerHTML = content;
+            document.getElementById("msg").appendChild(node)
+        }
+
+        function submitWords() {
+            let pack = {}
+            pack["body"] = document.querySelector("#words >[name=body]").value
+            pack["author"] = document.querySelector("#words >[name=author]").value
+            fetch('http://localhost:5000/add_msg', {
+                body: JSON.stringify(pack),
+                headers: {
+                    'content-type': 'application/json'
+                },
+                method: 'POST'
+            }).then(function (response) {
+                return response.json();
+            }).then(function (response) {
+                console.log(response)
+                pack['level'] = response.data['level']
+                pack['date'] = response.data['date']
+                addItem(pack)
+            })
+        }
+
+        function fecth_all() {
+            fetch('http://localhost:5000/all_msg')
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (response) {
+                    for (let item of response.data) {
+                        addItem(item)
+                    }
+                })
+        }
+        fecth_all()
+
+    </script>
+
+</body>
+
+</html>
